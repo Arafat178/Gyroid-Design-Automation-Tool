@@ -83,14 +83,7 @@ It is a mathematically defined three-dimensional surface that repeats periodical
 
 A commonly used implicit Gyroid equation is:
 
-[
-\sin(X)\cos(Y)
-+
-\sin(Y)\cos(Z)
-+
-\sin(Z)\cos(X)
-= C
-]
+[ sin(X)\cos(Y) + sin(Y)\cos(Z) + sin(Z)cos(X) = C ]
 
 where (C) controls the level-set of the surface.
 
@@ -728,29 +721,6 @@ Calculate Actual Porosity
       ↓
 Compare
 ```
-
-Actual CAD porosity can be calculated from:
-
-[
-\boxed{
-\phi =
-\frac{V_{void}}
-{V_{total}}
-\times100
-}
-]
-
-or equivalently:
-
-[
-\phi =
-\left(
-1-\frac{V_{solid}}
-{V_{total}}
-\right)
-\times100
-]
-
 The difference between empirical and CAD-derived porosity can then be quantified.
 
 This would significantly strengthen the engineering validity of the project.
@@ -817,34 +787,6 @@ That transition—from manually built geometry to computationally controlled geo
 Mechanical Engineer
 
 Bangladesh
-
----
-
-# Future Vision
-
-The long-term vision is to transform this project into a complete **Gyroid Computational Design Platform**:
-
-[
-\boxed{
-\text{Mathematical Model}
-\rightarrow
-\text{CAD}
-\rightarrow
-\text{Porosity}
-\rightarrow
-\text{CFD/FEA}
-\rightarrow
-\text{Optimization}
-}
-]
-
-Ultimately, the system could answer not only:
-
-> **"Can I generate a Gyroid?"**
-
-but the much more useful engineering question:
-
-> **"What Gyroid geometry gives me the best performance for my design requirements?"**
 
 ---
 
