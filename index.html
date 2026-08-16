@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gyroid Design Automation Tool</title>
+    <style>
+        :root {
+            --bg-base: #0a0a0c;
+            --bg-panel: #14151a;
+            --border-color: #2a2d35;
+            --accent-primary: #00ffcc;
+            --accent-dim: rgba(0, 255, 204, 0.15);
+            --text-main: #d1d5db;
+            --text-muted: #8b92a5;
+            --text-highlight: #ffffff;
+            --error-color: #ff4a4a;
+            --font-ui: 'Segoe UI', system-ui, sans-serif;
+            --font-mono: 'Consolas', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            line-height: 1.5;
+            padding: 2rem;
+            background-image: 
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center top;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: var(--text-highlight);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.25rem;
+        }
+
+        h2 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .panel h2:first-child { margin-top: 0; }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            margin-bottom: 2rem;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            display: flex;
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-wrapper:focus-within { border-color: var(--accent-primary); }
+
+        .input-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-highlight);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            padding: 0.75rem;
+            outline: none;
+        }
+
+        .input-wrapper .unit {
+            padding: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-left: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: var(--bg-base);
+        }
+
+        .btn-primary:hover {
+            background: #00cca3;
+            box-shadow: 0 0 15px var(--accent-dim);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .btn-secondary:hover { background: var(--accent-dim); }
+
+        .status-msg {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            border-radius: 2px;
+            display: none;
+        }
+
+        .error {
+            background: rgba(255, 74, 74, 0.1);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .success {
+            background: var(--accent-dim);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        /* Result Cards */
+        .result-card {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .porosity-value {
+            font-size: 3.5rem;
+            font-family: var(--font-mono);
+            color: var(--accent-primary);
+            font-weight: 300;
+            line-height: 1;
+            margin: 1rem 0;
+            text-shadow: 0 0 20px var(--accent-dim);
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px dotted var(--border-color);
+        }
+        
+        .data-row:last-child { border-bottom: none; }
+
+        /* Graph & Table */
+        .canvas-container {
+            width: 100%;
+            height: 400px;
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        canvas { width: 100%; height: 100%; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-align: right;
+            background: var(--bg-base);
+        }
+
+        th, td {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-muted);
+            font-weight: normal;
+            text-align: right;
+        }
+
+        .highlight-row {
+            background: var(--accent-dim);
+            color: var(--accent-primary);
+            font-weight: bold;
+        }
+
+        /* Math Section */
+        details {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        summary {
+            color: var(--accent-primary);
+            cursor: pointer;
+            outline: none;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .equation-block {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            font-style: italic;
+        }
+
+        /* Code Editor */
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .code-actions button {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        pre {
+            background: #050505;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            overflow-x: auto;
+            height: 400px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #d4d4d4;
+            line-height: 1.6;
+        }
+
+        .vba-comment { color: #6a9955; }
+        .vba-keyword { color: #569cd6; }
+        .vba-number { color: #b5cea8; }
+        .vba-string { color: #ce9178; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <!-- LEFT CONTROL PANEL -->
+    <div class="panel">
+        <h1>Gyroid Design Automation</h1>
+        <div class="subtitle">SolidWorks Macro + Porosity Calculator</div>
+
+        <h2>Parameters</h2>
+        
+        <div class="input-grid">
+            <div class="input-group">
+                <label>Enter Unit Size (a)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="val-a" value="20" step="1">
+                    <span class="unit">mm</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Thickness (t)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="val-t" value="1" step="0.1">
+                    <span class="unit">mm</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="executeGeneration()">Generate Gyroid</button>
+        <div id="status-box" class="status-msg"></div>
+
+        <div style="margin-top: 2rem; display: none;" id="summary-section">
+            <h2>Gyroid Parameters</h2>
+            <div class="data-row"><span>Unit Cell Size (a)</span> <span id="sum-a">-- mm</span></div>
+            <div class="data-row"><span>Reference Cell Size (L)</span> <span>10.00 mm</span></div>
+            <div class="data-row"><span>Thickness (t)</span> <span id="sum-t">-- mm</span></div>
+            <div class="data-row" style="margin-top: 1rem;"><span>t/a</span> <span id="sum-ratio">--</span></div>
+            <div class="data-row"><span>POROSITY</span> <span id="sum-porosity" style="color: var(--accent-primary);">-- %</span></div>
+        </div>
+    </div>
+
+    <!-- RIGHT ANALYSIS & OUTPUT PANEL -->
+    <div class="panel">
+        
+        <div class="result-card">
+            <h2 style="border: none; margin: 0;">Gyroid Result</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); letter-spacing: 3px; margin-top: 1rem;">POROSITY</div>
+            <div class="porosity-value" id="display-porosity">-- %</div>
+            <div class="data-row" style="justify-content: center; gap: 2rem; border: none;">
+                <span>a = <span id="res-a">--</span> mm</span>
+                <span>t = <span id="res-t">--</span> mm</span>
+                <span>t/a = <span id="res-ratio">--</span></span>
+            </div>
+            <div style="font-size: 0.7rem; color: #666; margin-top: 1rem;">Calculated from empirical Gyroid correlation</div>
+        </div>
+
+        <details>
+            <summary>▸ Porosity Equation</summary>
+            <div class="equation-block">
+                y = 105.3989(t/a)² - 321.9821(t/a) + 100.1305
+            </div>
+            <p style="color: var(--text-muted);">
+                <strong>y</strong> = Porosity (%)<br>
+                <strong>t</strong> = Surface thickness<br>
+                <strong>a</strong> = Unit Cell size
+            </p>
+            <p style="color: #666; font-size: 0.75rem; margin-top: 1rem;">
+                Note: This equation is an empirical correlation supplied for the Gyroid geometry and is used for estimation of porosity.
+            </p>
+        </details>
+
+        <h2>Porosity Analysis</h2>
+        <div class="canvas-container">
+            <canvas id="porosityChart"></canvas>
+        </div>
+
+        <h2>Porosity Table</h2>
+        <div style="max-height: 300px; overflow-y: auto; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <table id="porosity-table">
+                <thead>
+                    <tr>
+                        <th>Thickness (mm)</th>
+                        <th>t/a</th>
+                        <th>Porosity (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Generated VBA Macro</h2>
+        <div class="code-header">
+            <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">SolidWorks API Script</span>
+            <div class="code-actions">
+                <button class="btn btn-secondary" id="btn-copy" onclick="copyMacro()">Copy Code</button>
+                <button class="btn btn-secondary" onclick="downloadMacro()">Download .BAS</button>
+            </div>
+        </div>
+        <pre id="vba-output"><span class="vba-comment">' Initialize parameters and click "Generate Gyroid" to construct the macro...</span></pre>
+        
+    </div>
+</div>
+
+<script>
+    const vbaTemplate = `Option Explicit
+
+' === WINDOWS API DECLARATION () ===
+#If VBA7 Then
+    Private Declare PtrSafe Function SetForegroundWindow Lib "user32" (ByVal hwnd As LongPtr) As Long
+    Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hwnd As LongPtr, ByVal nCmdShow As Long) As Long
+    Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+#Else
+    Private Declare Function SetForegroundWindow Lib "user32" (ByVal hwnd As Long) As Long
+    Private Declare Function ShowWindow Lib "user32" (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
+    Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+#End If
+
+Dim swApp As Object
+Dim Part As Object
+Dim boolstatus As Boolean
+
+'================ PARAMETRIC INPUTS ================
+Dim a As Double       'Overall Gyroid size
+Dim L As Double       'Unit cell size
+Dim m As Double
+Dim t As Double        'surface thickness
+
+'================ VISUALIZATION HELPER ================
+Sub VisualizeStep(Part As Object)
+    Part.ForceRebuild3 False
+    Part.GraphicsRedraw2
+    DoEvents
+    Sleep 400
+End Sub
+
+' Function to create an independent 3-point spline in 3D space
+Function CreateSpline3Points(Part As Object, _
+                             x1 As Double, y1 As Double, z1 As Double, _
+                             x2 As Double, y2 As Double, z2 As Double, _
+                             x3 As Double, y3 As Double, z3 As Double) As Object
+
+    Dim pointArray As Variant
+    Dim points(0 To 8) As Double
+
+    points(0) = x1: points(1) = y1: points(2) = z1
+    points(3) = x2: points(4) = y2: points(5) = z2
+    points(6) = x3: points(7) = y3: points(8) = z3
+
+    pointArray = points
+    Set CreateSpline3Points = Part.SketchManager.CreateSpline((pointArray))
+
+End Function
+
+' Function to Copy, Translate, and Rotate a Surface Body in 3D Space
+Function MoveCopySurface(Part As Object, surfaceName As String, _
+                         transX As Double, transY As Double, transZ As Double, _
+                         rotX As Double, rotY As Double, rotZ As Double, _
+                         rotOriginX As Double, rotOriginY As Double, rotOriginZ As Double, _
+                         numCopies As Integer) As Object
+                         
+    Dim boolstatus As Boolean
+    
+    Part.ClearSelection2 True
+    boolstatus = Part.Extension.SelectByID2(surfaceName, "SURFACEBODY", 0, 0, 0, False, 1, Nothing, 0)
+    
+    If Not boolstatus Then
+        MsgBox "Error: Surface body '" & surfaceName & "' could not be found in the tree."
+        Set MoveCopySurface = Nothing
+        Exit Function
+    End If
+    
+    Dim isCopy As Boolean
+    If numCopies > 0 Then
+        isCopy = True
+    Else
+        isCopy = False
+        numCopies = 1
+    End If
+    
+    Set MoveCopySurface = Part.FeatureManager.InsertMoveCopyBody2(transX, transY, transZ, _
+                                                                  0, _
+                                                                  rotOriginX, rotOriginY, rotOriginZ, _
+                                                                  rotZ, rotY, rotX, _
+                                                                  isCopy, numCopies)
+                                                                  
+    Part.ClearSelection2 True
+    
+    VisualizeStep Part
+    
+End Function
+
+Sub main()
+
+    Set swApp = Application.SldWorks
+    Set Part = swApp.ActiveDoc
+    
+    ' === BRING SOLIDWORKS WINDOW TO FRONT ===
+    Dim swFrame As Object
+    Set swFrame = swApp.Frame()
+    SetForegroundWindow swFrame.GetHWnd() ' SolidWorks-?? ????? ????
+    ShowWindow swFrame.GetHWnd(), 3
+    ' ========================================
+
+    If Part Is Nothing Then
+        MsgBox "No active document found. Please open a part template."
+        Exit Sub
+    End If
+    
+    Part.ClearSelection2 True
+    
+    'Parametric input
+    a = 0.02              'Enter unit cell size
+    L = 0.01              '10 mm unit cell and 20mm overall size
+    m = a / L              'Dimensionless parameter
+    t = 0.001               'surface thickness
+    
+    ' 1. Initiate 3D Sketch for the Gyroid Fundamental Patch
+    Part.SketchManager.Insert3DSketch True
+
+    CreateSpline3Points Part, 0, 0, 0, 0, 0.0025 * m, 0.005 * m, 0, 0, 0.01 * m
+    CreateSpline3Points Part, 0, 0, 0.01 * m, 0.0025 * m, 0.005 * m, 0.01 * m, 0, 0.01 * m, 0.01 * m
+    CreateSpline3Points Part, 0, 0.01 * m, 0.01 * m, 0.005 * m, 0.01 * m, 0.0075 * m, 0.01 * m, 0.01 * m, 0.01 * m
+    CreateSpline3Points Part, 0.01 * m, 0.01 * m, 0.01 * m, 0.01 * m, 0.0075 * m, 0.005 * m, 0.01 * m, 0.01 * m, 0
+    CreateSpline3Points Part, 0.01 * m, 0.01 * m, 0, 0.0075 * m, 0.005 * m, 0, 0.01 * m, 0, 0
+    CreateSpline3Points Part, 0.01 * m, 0, 0, 0.005 * m, 0, 0.0025 * m, 0, 0, 0
+    
+    Part.SketchManager.Insert3DSketch True
+    Part.ClearSelection2 True
+    
+    VisualizeStep Part ' visualization
+    
+    Dim myFeature As Object
+    Set myFeature = Part.Extension.GetLastFeatureAdded()
+    
+    If Not myFeature Is Nothing Then
+        boolstatus = myFeature.Select2(False, 257)
+    End If
+    
+    Dim swSelMgr As Object
+    Dim selObj As Object
+    Set swSelMgr = Part.SelectionManager
+    Set selObj = swSelMgr.GetSelectedObject6(1, 257)
+    
+    Dim swFeat As Object
+    Set swFeat = Part.FeatureManager.InsertFillSurface2(2, False, selObj, 1, Nothing, Nothing)
+    
+    If swFeat Is Nothing Then
+        MsgBox "Surface generation failed. Verify spline tangency or spatial tolerances."
+        Exit Sub
+    End If
+    
+    Dim swFillSurfaceData As Object
+    Set swFillSurfaceData = swFeat.GetDefinition()
+    
+    If swFillSurfaceData.AccessSelections(Part, Nothing) Then
+        swFillSurfaceData.OptimizeSurface = False
+        swFillSurfaceData.ResolutionControl = 3
+        boolstatus = swFeat.ModifyDefinition(swFillSurfaceData, Part, Nothing)
+    End If
+    
+    Part.ClearSelection2 True
+    
+    VisualizeStep Part ' Visualization
+    
+    Dim myNewFeature As Object
+    Const PI As Double = 3.14159265358979
+    
+    ' === MOVE/COPY OPERATIONS ===
+    '  VisualizeStep
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0.01 * m, 0.01 * m, 0.01 * m, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0.01 * m, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Body-Move/Copy2", 0, 0, 0, 0, PI, 0, 0.015 * m, 0.005 * m, 0.005 * m, 0)
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0, 0, 0.01 * m, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Body-Move/Copy4", 0, 0, 0, PI, 0, 0, 0.005 * m, 0.005 * m, 0.015 * m, 0)
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0.01 * m, 0, 0.01 * m, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Body-Move/Copy6", 0, 0, 0, PI, PI, 0, 0.015 * m, 0.005 * m, 0.015 * m, 0)
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0.01 * m, 0.01 * m, 0, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Body-Move/Copy8", 0, 0, 0, PI, 0, 0, 0.015 * m, 0.015 * m, 0.005 * m, 0)
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0, 0.01 * m, 0.01 * m, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Body-Move/Copy10", 0, 0, 0, 0, PI, 0, 0.005 * m, 0.015 * m, 0.015 * m, 0)
+    Set myNewFeature = MoveCopySurface(Part, "Surface-Fill1", 0, 0.01 * m, 0, 0, 0, 0, 0, 0, 0, 1)
+    Set myNewFeature = MoveCopySurface(Part, "Body-Move/Copy12", 0, 0, 0, PI, PI, 0, 0.005 * m, 0.015 * m, 0.005 * m, 0)
+    
+    ' === KNIT SURFACE ===
+    Part.ClearSelection2 True
+    boolstatus = Part.Extension.SelectByID2("Surface-Fill1", "SURFACEBODY", 0, 0, 0, False, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy1", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy3", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy5", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy7", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy9", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy11", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    boolstatus = Part.Extension.SelectByID2("Body-Move/Copy13", "SURFACEBODY", 0, 0, 0, True, 1, Nothing, 0)
+    Set myFeature = Part.FeatureManager.InsertSewRefSurface(True, False, True, 0.00005, 0.001)
+    
+    VisualizeStep Part ' after Knit
+    
+    ' === THICKEN SURFACE ===
+    Part.ClearSelection2 True
+    boolstatus = Part.Extension.SelectByID2("Surface-Knit1", "BODYFEATURE", 0, 0, 0, False, 1, Nothing, 0)
+    Set myFeature = Part.FeatureManager.FeatureBossThicken(t, 2, 0, False, True, True, True)
+
+    VisualizeStep Part ' Thicken
+    
+    ' === START ROTATION ANIMATION ===
+    AnimateRotation Part
+    
+    
+
+End Sub
+
+'================ 3D VIEWPORT ANIMATION ================
+Sub AnimateRotation(Part As Object)
+    Part.ViewZoomtofit2
+    Part.GraphicsRedraw2
+    DoEvents
+    Sleep 300
+
+    Dim swModelView As Object
+    Set swModelView = Part.ActiveView
+    
+    Dim i As Integer
+    Dim steps As Integer
+    Dim angleStep As Double
+    Const PI As Double = 3.14159265358979
+    
+    steps = 36
+    angleStep = PI / 18 ' 10 degrees in radians
+    
+    ' 1. Rotate around Y-Axis (Vertical)
+    For i = 1 To steps
+        swModelView.RotateAboutCenter 0, angleStep
+        Part.GraphicsRedraw2
+        DoEvents
+        Sleep 50
+    Next i
+    
+    ' 2. Rotate around Z-Axis (Roll / Screen Normal)
+    For i = 1 To steps
+        swModelView.RollBy angleStep
+        Part.GraphicsRedraw2
+        DoEvents
+        Sleep 50
+    Next i
+    
+    ' 3. Rotate around X-Axis (Horizontal)
+    For i = 1 To steps
+        swModelView.RotateAboutCenter angleStep, 0
+        Part.GraphicsRedraw2
+        DoEvents
+        Sleep 50
+    Next i
+    
+    Part.ViewZoomtofit2
+    Part.GraphicsRedraw2
+End Sub
+
+
+`;
+
+    let generatedCode = "";
+
+    function calcPorosity(t, a) {
+        const ratio = t / a;
+        return (105.3989 * Math.pow(ratio, 2)) - (321.9821 * ratio) + 100.1305;
+    }
+
+    function showStatus(msg, isError) {
+        const box = document.getElementById('status-box');
+        box.textContent = isError ? '⚠ ' + msg : '✓ ' + msg;
+        box.className = 'status-msg ' + (isError ? 'error' : 'success');
+        box.style.display = 'block';
+        if (!isError) setTimeout(() => box.style.display = 'none', 3000);
+    }
+
+    function drawChart(currentA, currentT) {
+        const canvas = document.getElementById('porosityChart');
+        const ctx = canvas.getContext('2d');
+        
+        // Handle DPI scaling for crisp lines
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        
+        const w = rect.width;
+        const h = rect.height;
+        const pad = 50;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Chart Area
+        const xMin = 0; const xMax = 2.0;
+        const yMin = 0; const yMax = 100;
+
+        const mapX = val => pad + ((val - xMin) / (xMax - xMin)) * (w - pad * 2);
+        const mapY = val => h - pad - ((val - yMin) / (yMax - yMin)) * (h - pad * 2);
+
+        // Grid & Labels
+        ctx.strokeStyle = '#2a2d35';
+        ctx.fillStyle = '#8b92a5';
+        ctx.font = '10px Consolas';
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'center';
+
+        // X-Axis
+        for(let x = 0; x <= 2.0; x += 0.5) {
+            let px = mapX(x);
+            ctx.beginPath(); ctx.moveTo(px, pad); ctx.lineTo(px, h - pad); ctx.stroke();
+            ctx.fillText(x.toFixed(1), px, h - pad + 15);
+        }
+        ctx.fillText("Surface Thickness, t (mm)", w / 2, h - pad + 35);
+
+        // Y-Axis
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for(let y = 0; y <= 100; y += 20) {
+            let py = mapY(y);
+            ctx.beginPath(); ctx.moveTo(pad, py); ctx.lineTo(w - pad, py); ctx.stroke();
+            ctx.fillText(y + "%", pad - 10, py);
+        }
+        
+        ctx.save();
+        ctx.translate(15, h / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillText("Porosity (%)", 0, 0);
+        ctx.restore();
+
+        // Plot curves
+        const a_values = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+        
+        a_values.forEach(a => {
+            ctx.beginPath();
+            let started = false;
+            for(let t = 0.1; t <= 2.0; t += 0.05) {
+                let p = calcPorosity(t, a);
+                if(p < 0 || p > 100) continue; // Clamp visual
+                let px = mapX(t);
+                let py = mapY(p);
+                if(!started) { ctx.moveTo(px, py); started = true; }
+                else ctx.lineTo(px, py);
+            }
+            
+            if(a === currentA) {
+                ctx.strokeStyle = '#00ffcc';
+                ctx.lineWidth = 2;
+            } else {
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+            }
+            ctx.stroke();
+        });
+
+        // Draw Current Point Marker
+        const currentPorosity = calcPorosity(currentT, currentA);
+        if(currentPorosity >= 0 && currentPorosity <= 100) {
+            const px = mapX(currentT);
+            const py = mapY(currentPorosity);
+            
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ffcc';
+            ctx.fill();
+            ctx.strokeStyle = '#0a0a0c';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Marker Tooltip Box
+            ctx.fillStyle = 'rgba(20, 21, 26, 0.9)';
+            ctx.strokeStyle = '#00ffcc';
+            ctx.lineWidth = 1;
+            ctx.fillRect(px + 10, py - 40, 120, 50);
+            ctx.strokeRect(px + 10, py - 40, 120, 50);
+            
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`a = ${currentA} mm`, px + 15, py - 35);
+            ctx.fillText(`t = ${currentT.toFixed(1)} mm`, px + 15, py - 22);
+            ctx.fillText(`y = ${currentPorosity.toFixed(2)} %`, px + 15, py - 9);
+        }
+
+        // Legend
+        ctx.fillStyle = 'rgba(20, 21, 26, 0.8)';
+        ctx.fillRect(w - pad - 60, pad, 50, a_values.length * 15 + 10);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        a_values.forEach((a, i) => {
+            ctx.fillStyle = (a === currentA) ? '#00ffcc' : '#8b92a5';
+            ctx.fillText(`a = ${a}`, w - pad - 50, pad + 10 + i * 15);
+        });
+    }
+
+    function buildTable(currentA, currentT) {
+        const tbody = document.querySelector('#porosity-table tbody');
+        tbody.innerHTML = '';
+        
+        for(let t = 0.1; t <= 2.0; t += 0.1) {
+            const ratio = t / currentA;
+            const p = calcPorosity(t, currentA);
+            
+            const tr = document.createElement('tr');
+            // Allow small floating point tolerance for highlight matching
+            if(Math.abs(t - currentT) < 0.01) {
+                tr.className = 'highlight-row';
+            }
+            
+            tr.innerHTML = `
+                <td>${t.toFixed(1)}</td>
+                <td>${ratio.toFixed(6)}</td>
+                <td>${p.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function syntaxHighlight(code) {
+        let html = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        html = html.replace(/('.*)/g, '<span class="vba-comment">$1</span>');
+        html = html.replace(/(".*?")/g, '<span class="vba-string">$1</span>');
+        html = html.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="vba-number">$1</span>');
+        
+        const keywords = ['Option Explicit', 'Private', 'Declare', 'PtrSafe', 'Function', 'Lib', 'ByVal', 'Long', 'Dim', 'As', 'Object', 'Sub', 'End Sub', 'Set', 'If', 'Then', 'Is', 'Nothing', 'Exit', 'Boolean', 'Double', 'True', 'False'];
+        const regex = new RegExp(`\\b(${keywords.join('|')})\\b`, 'g');
+        html = html.replace(regex, '<span class="vba-keyword">$1</span>');
+        
+        return html;
+    }
+
+    function executeGeneration() {
+        const a_mm = parseFloat(document.getElementById('val-a').value);
+        const t_mm = parseFloat(document.getElementById('val-t').value);
+
+        // Validation
+        if(isNaN(a_mm) || a_mm <= 0 || isNaN(t_mm) || t_mm <= 0) {
+            showStatus("Please enter valid positive dimensions.", true);
+            return;
+        }
+        if(t_mm >= a_mm) {
+            showStatus("Surface thickness must be smaller than the overall Gyroid size.", true);
+            return;
+        }
+
+        // Mathematical Operations
+        const ratio = t_mm / a_mm;
+        const porosity = calcPorosity(t_mm, a_mm);
+        
+        const a_m = a_mm / 1000;
+        const t_m = t_mm / 1000;
+
+        // UI Updates - Summary Card
+        document.getElementById('sum-a').textContent = a_mm.toFixed(2) + " mm";
+        document.getElementById('sum-t').textContent = t_mm.toFixed(2) + " mm";
+        document.getElementById('sum-ratio').textContent = ratio.toFixed(6);
+        document.getElementById('sum-porosity').textContent = porosity.toFixed(2) + " %";
+        document.getElementById('summary-section').style.display = 'block';
+
+        // UI Updates - Result Card
+        document.getElementById('display-porosity').textContent = porosity.toFixed(2) + " %";
+        document.getElementById('res-a').textContent = a_mm;
+        document.getElementById('res-t').textContent = t_mm;
+        document.getElementById('res-ratio').textContent = ratio.toFixed(6);
+
+        // Chart & Table
+        drawChart(a_mm, t_mm);
+        buildTable(a_mm, t_mm);
+
+        // VBA Construction
+        let code = vbaTemplate;
+        code = code.replace(/^(\s*)a\s*=\s*0\.02/m, `$1a = ${a_m}`);
+        code = code.replace(/^(\s*)t\s*=\s*0\.001/m, `$1t = ${t_m}`);
+        
+        generatedCode = code;
+        document.getElementById('vba-output').innerHTML = syntaxHighlight(code);
+        
+        showStatus("Gyroid macro and porosity evaluated successfully.", false);
+    }
+
+    function copyMacro() {
+        if(!generatedCode) return;
+        navigator.clipboard.writeText(generatedCode).then(() => {
+            const btn = document.getElementById('btn-copy');
+            const orig = btn.innerText;
+            btn.innerText = "✓ COPIED";
+            btn.style.background = "var(--accent-dim)";
+            setTimeout(() => {
+                btn.innerText = orig;
+                btn.style.background = "transparent";
+            }, 2000);
+        });
+    }
+
+    function downloadMacro() {
+        if(!generatedCode) return;
+        const blob = new Blob([generatedCode], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "Gyroid_Generated.bas";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    }
+
+    // Handle window resize for canvas redraw
+    window.addEventListener('resize', () => {
+        const a_mm = parseFloat(document.getElementById('val-a').value);
+        const t_mm = parseFloat(document.getElementById('val-t').value);
+        if(!isNaN(a_mm) && !isNaN(t_mm) && generatedCode !== "") {
+            drawChart(a_mm, t_mm);
+        }
+    });
+
+</script>
+</body>
+</html>
