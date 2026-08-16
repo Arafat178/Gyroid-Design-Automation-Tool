@@ -600,14 +600,7 @@ Replace the current spline-based approach with direct mathematical TPMS generati
 
 For example:
 
-[
-\sin(x)\cos(y)
-+
-\sin(y)\cos(z)
-+
-\sin(z)\cos(x)
-=C
-]
+[sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = C]
 
 This would allow truly parametric Gyroid generation based directly on the mathematical surface.
 
@@ -827,7 +820,7 @@ Bangladesh
 
 ---
 
-# ⭐ Future Vision
+# Future Vision
 
 The long-term vision is to transform this project into a complete **Gyroid Computational Design Platform**:
 
