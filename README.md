@@ -147,20 +147,6 @@ t = 0.001
 
 The application uses the following empirical correlation to estimate Gyroid porosity:
 
-[
-\boxed{
-y =
-105.3989
-\left(\frac{t}{a}\right)^2
---------------------------
-
-321.9821
-\left(\frac{t}{a}\right)
-+
-100.1305
-}
-]
-
 where:
 
 | Symbol | Meaning             |
@@ -168,14 +154,6 @@ where:
 | (y)    | Porosity (%)        |
 | (t)    | Surface thickness   |
 | (a)    | Unit Cell Gyroid size |
-
-The ratio:
-
-[
-\frac{t}{a}
-]
-
-is dimensionless.
 
 Therefore, `t` and `a` must use the same unit when calculating porosity.
 
@@ -214,17 +192,6 @@ t = 2.0 mm
 
 and calculates:
 
-[
-y(t)=
-105.3989
-\left(\frac{t}{a}\right)^2
---------------------------
-
-321.9821
-\left(\frac{t}{a}\right)
-+
-100.1305
-]
 
 This allows the user to investigate the relationship between:
 
